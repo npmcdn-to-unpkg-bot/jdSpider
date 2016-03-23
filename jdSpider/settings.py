@@ -14,7 +14,7 @@ BOT_NAME = 'jdSpider'
 SPIDER_MODULES = ['jdSpider.spiders']
 NEWSPIDER_MODULE = 'jdSpider.spiders'
 
-
+LOG_LEVEL = 'INFO'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'jdSpider (+http://www.yourdomain.com)'
 
@@ -64,6 +64,9 @@ NEWSPIDER_MODULE = 'jdSpider.spiders'
 #ITEM_PIPELINES = {
 #    'jdSpider.pipelines.SomePipeline': 300,
 #}
+ITEM_PIPELINES = {
+   'jdSpider.pipelines.SkuidRedisPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
