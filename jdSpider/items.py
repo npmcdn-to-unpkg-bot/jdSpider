@@ -16,3 +16,8 @@ class JdspiderItem(scrapy.Item):
 
 class SkuIdItem(scrapy.Item):
     product_id = scrapy.Field()
+
+
+class ProductInfoItem(scrapy.Item):
+    product_info = scrapy.Field()
+    product_id = scrapy.Field()

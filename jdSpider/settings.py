@@ -14,7 +14,10 @@ BOT_NAME = 'jdSpider'
 SPIDER_MODULES = ['jdSpider.spiders']
 NEWSPIDER_MODULE = 'jdSpider.spiders'
 
-LOG_LEVEL = 'INFO'
+MONGO_URI = 'localhost:27017'
+MONGO_DATABASE = 'jdSpider'
+
+# LOG_LEVEL = 'INFO'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'jdSpider (+http://www.yourdomain.com)'
 
@@ -65,7 +68,9 @@ LOG_LEVEL = 'INFO'
 #    'jdSpider.pipelines.SomePipeline': 300,
 #}
 ITEM_PIPELINES = {
-   'jdSpider.pipelines.SkuidRedisPipeline': 300,
+   # 'jdSpider.pipelines.SkuidRedisPipeline': 300,
+   # 'jdSpider.pipelines.ProductMongoPipeline': 300,
+   'jdSpider.pipelines.MongoPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
