@@ -13,11 +13,12 @@ class CommentSpider(scrapy.Spider):
     allowed_domains = ["jd.com"]
     start_urls = []
     base_url = 'http://club.jd.com/productpage/p-%s-s-0-t-3-p-%s.html'
-    another_url = 'http://s.club.jd.com/productpage/p-1956794-s-0-t-3-p-1023.html'
+    another_url = 'http://s.club.jd.com/productpage/p-%s-s-0-t-3-p-%s.html'
     r = redis.Redis(connection_pool=redis_pool)
     failList = []
     is_end = False
     max_page = 0
+    count = 0
     custom_settings = {
         'HOST': 'item.jd.com',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -40,20 +41,35 @@ class CommentSpider(scrapy.Spider):
     def parse(self, response):
         # time.sleep(1)
         page = response.request.meta['page']
+        url_type = response.request.meta['url_type']
+        product_id = response.request.meta['product_id']
         r = response.body.decode("gbk")
         if not r:
-            self.failList.append(page)
-            # print self.failList
-            print len(self.failList)
+            if url_type == 0:
+                if page not in self.failList:
+                    self.failList.append(page)
+                yield scrapy.Request(self.another_url % (product_id, page), callback=self.parse,
+                                 meta={'page': page, 'url_type': 1, 'product_id': product_id})
+            else:
+                if page not in self.failList:
+                    self.failList.append(page)
+                yield scrapy.Request(self.base_url % (product_id, page), callback=self.parse,
+                                 meta={'page': page, 'url_type': 0, 'product_id': product_id})
+
         else:
             # print r
             j = json.loads(r)
             if not j["comments"]:
                 self.is_end = True
                 self.fail_list_retry()
-                print "end"
+                # print "end"
             else:
-                print j["comments"]
+                if page in self.failList:
+                    self.failList.remove(page)
+                self.count += 1
+                print self.count
+
+        # print len(self.failList)
 
     def get_max_pages(self, response):
         product_id = response.request.meta['product_id']
@@ -67,8 +83,11 @@ class CommentSpider(scrapy.Spider):
         while current_page < self.max_page:
             current_page += 1
             yield scrapy.Request(self.base_url % (product_id, current_page - 1),
-                                 callback=self.parse, meta={'page': current_page - 1})
-        self.fail_list_retry()
+                                 callback=self.parse, meta={'page': current_page - 1,
+                                                            'url_type': 0,
+                                                            'product_id': product_id})
+        print "dasd"
+        # self.fail_list_retry()
 
     def fail_list_retry(self):
         product_id = 1956794
