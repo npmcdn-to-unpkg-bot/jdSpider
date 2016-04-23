@@ -65,7 +65,7 @@ r = redis.Redis(connection_pool=redis_pool)
 
 class MongoPipeline(object):
 
-    collection_name = 'jdProduct_test2'
+    collection_name = 'jdProductComments_test'
 
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri

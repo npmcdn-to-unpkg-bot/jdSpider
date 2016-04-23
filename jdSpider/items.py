@@ -21,3 +21,8 @@ class SkuIdItem(scrapy.Item):
 class ProductInfoItem(scrapy.Item):
     product_info = scrapy.Field()
     product_id = scrapy.Field()
+
+
+class CommentsItem(scrapy.Item):
+    comments = scrapy.Field()
+    product_id = scrapy.Field()

@@ -56,6 +56,11 @@ DOWNLOAD_DELAY=0.1
 #    'jdSpider.middlewares.MyCustomDownloaderMiddleware': 543,
 #}
 
+# # DOWNLOADER_MIDDLEWARES = {
+#     # 'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': 400
+#     # 'random_useragent.RandomUserAgentMiddleware': 400
+# }
+
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
@@ -91,3 +96,5 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR='httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
+USER_AGENT_LIST = "spiders/uas.txt"
+CONCURRENT_REQUESTS=8
