@@ -35,13 +35,13 @@ class CommentSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        product_id = 1956794
+        product_id = [1956794, 1956799]
         page_number = 0
-        return [scrapy.Request(self.base_url % (product_id, page_number),
-                               callback=self.get_max_pages, meta={'product_id': product_id})]
+        for pid in product_id:
+            yield scrapy.Request(self.base_url % (pid, page_number),
+                               callback=self.get_max_pages, meta={'product_id': pid})
 
     def parse(self, response):
-        # time.sleep(1)
         page = response.request.meta['page']
         url_type = response.request.meta['url_type']
         product_id = response.request.meta['product_id']
@@ -63,16 +63,17 @@ class CommentSpider(scrapy.Spider):
             if page in self.failList:
                 self.failList.remove(page)
             self.success_count[product_id] += 1
+            # single produce comments storage
             body_comments = body_json["comments"]
             comment_length = len(body_comments)
             i = 0
             while i < comment_length:
                 # print body_comments[i]
-                yield CommentsItem(comments=body_comments[i], product_id=product_id)
+                body_comments[i]["product_id"] = product_id
+                yield CommentsItem(comments=body_comments[i])
                 i += 1
             print 'product %d success %d' % (product_id, self.success_count[product_id])
-            # single produce comments storage
-            # while i
+
         print 'fail count %d' % len(self.failList)
         if self.success_count[product_id] == (self.max_page[product_id] - 1):
             print "success!!!!!!"

@@ -25,4 +25,3 @@ class ProductInfoItem(scrapy.Item):
 
 class CommentsItem(scrapy.Item):
     comments = scrapy.Field()
-    product_id = scrapy.Field()
