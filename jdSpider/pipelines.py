@@ -38,8 +38,8 @@ r = redis.Redis(connection_pool=redis_pool)
 # class JdCommentsPipeline(object):
 #     def process_item(self, item, spider):
 #         return item
-#
-#
+# #
+# # #
 # class SkuidRedisPipeline(object):
 #     # @check_spider_pipeline
 #     def process_item(self, item, spider):
@@ -48,7 +48,7 @@ r = redis.Redis(connection_pool=redis_pool)
 #         return item
 #         # pass
 
-#
+# #
 # class CommentMongoPipeline(object):
 #     @check_spider_pipeline
 #     def process_item(self, item, spider):
@@ -61,11 +61,11 @@ r = redis.Redis(connection_pool=redis_pool)
 #         # product_info.insert(item['product_info'])
 #         # return item
 #         pass
-
-
+#
+#
 class MongoPipeline(object):
 
-    collection_name = 'jdProductComments_test2'
+    collection_name = 'jdProductInfo_test2'
 
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri

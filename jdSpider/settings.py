@@ -73,7 +73,7 @@ DOWNLOAD_DELAY=0.1
 #    'jdSpider.pipelines.SomePipeline': 300,
 #}
 ITEM_PIPELINES = {
-   # 'jdSpider.pipelines.SkuidRedisPipeline': 300,
+   # 'jdSpider.pipelines.SkuidRedisPipeline': 300
    # 'jdSpider.pipelines.ProductMongoPipeline': 300,
    'jdSpider.pipelines.MongoPipeline': 300,
 }
@@ -97,4 +97,4 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
 USER_AGENT_LIST = "spiders/uas.txt"
-CONCURRENT_REQUESTS=8
+# CONCURRENT_REQUESTS=8
