@@ -13,63 +13,34 @@ import pymongo
 r = redis.Redis(connection_pool=redis_pool)
 
 
-# def check_spider_pipeline(process_item_method):
-#     @functools.wraps(process_item_method)
-#     def wrapper(self, item, spider):
-#         # message template for debugging
-#         msg = '%%s %s pipeline step' % (self.__class__.__name__,)
-#
-#         # if class is in the spider's pipeline, then use the
-#         # process_item method normally.
-#         # if self.__class__ in spider.pipeline:
-#         #     spider.logger.debug(msg % 'executing')
-#         #     return process_item_method(self, item, spider)
-#         #
-#         # # otherwise, just return the untouched item (skip this step in
-#         # # the pipeline)
-#         # else:
-#         #     spider.logger.debug(msg % 'skipping')
-#         #     return item
-#         return process_item_method(self, item, spider)
-#
-#     return wrapper
-#
-#
-# class JdCommentsPipeline(object):
-#     def process_item(self, item, spider):
-#         return item
-# #
-# # #
-# class SkuidRedisPipeline(object):
-#     # @check_spider_pipeline
-#     def process_item(self, item, spider):
-#         r.sadd('productId:queue', item['product_id'])
-#         r.sadd('commentsId:queue', item['product_id'])
-#         return item
-#         # pass
+def check_spider_pipeline(process_item_method):
+    @functools.wraps(process_item_method)
+    def wrapper(self, item, spider):
+        # message template for debugging
+        msg = '%%s %s pipeline step' % (self.__class__.__name__,)
 
-# #
-# class CommentMongoPipeline(object):
-#     @check_spider_pipeline
-#     def process_item(self, item, spider):
-#         pass
-#
-#
-# class ProductMongoPipeline(object):
-#     # @check_spider_pipeline
-#     def process_item(self, item, spider):
-#         # product_info.insert(item['product_info'])
-#         # return item
-#         pass
-#
-#
+        # if class is in the spider's pipeline, then use the
+        # process_item method normally.
+        if self.__class__ in spider.pipeline:
+            spider.logger.debug(msg % 'executing')
+            return process_item_method(self, item, spider)
+
+        # # otherwise, just return the untouched item (skip this step in
+        # # the pipeline)
+        else:
+            spider.logger.debug(msg % 'skipping')
+            return item
+        # return process_item_method(self, item, spider)
+    return wrapper
+
+
 class MongoPipeline(object):
-
-    collection_name = 'jdProductInfo_test2'
 
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
+        self.collection_name = ""
+        print "init"
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -81,10 +52,38 @@ class MongoPipeline(object):
     def open_spider(self, spider):
         self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
+        self.collection_name = spider.collection_name
 
     def close_spider(self, spider):
         self.client.close()
 
+    @check_spider_pipeline
     def process_item(self, item, spider):
-        self.db[self.collection_name].insert(dict(item))
+        comment = dict(item)
+        print comment['comments']["guid"]
+        self.db[self.collection_name].update_one({
+            'comments.guid': comment['comments']['guid']
+        }, {
+            '$set': comment
+
+        }, upsert=True)
+        # self.db[self.collection_name].insert(dict(item))
         return item
+
+
+class SkuidRedisPipeline(object):
+    def __init__(self):
+        self.redisSetName = ""
+
+    def open_spider(self, spider):
+        self.redisSetName = spider.set_name
+        print self.redisSetName
+
+    @check_spider_pipeline
+    def process_item(self, item, spider):
+        r.sadd('productId' + self.redisSetName + ':queue', item['product_id'])
+        r.sadd('commentsId' + self.redisSetName + ':queue', item['product_id'])
+        return item
+        # pass
+
+

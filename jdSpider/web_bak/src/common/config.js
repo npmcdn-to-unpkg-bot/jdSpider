@@ -6,6 +6,8 @@
 var cacheData = null;
 var DataLength = 0;
 var currentPage = 1;
+var searchIndex = "";
+var searchName = "";
 module.exports = {
   setData: function(data){
     cacheData = data;
@@ -23,6 +25,20 @@ module.exports = {
   },
   setCurrentPage: function(page){
     currentPage = page;
+  },
+  getSearchIndex: function(){
+    return searchIndex;
+  },
+  getSearchName: function(){
+    return searchName;
+  },
+  setSearchIndex: function(Index){
+    searchIndex = Index;
+    console.log("searchIndex"+searchIndex)
+  },
+  setSearchName: function(Name){
+    searchName = Name;
+     console.log("searchName"+searchName)
   }
 
 };

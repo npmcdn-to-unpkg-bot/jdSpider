@@ -26,10 +26,15 @@ class ProductSpider(scrapy.Spider):
                       'AppleWebKit/537.36 (KHTML, like Gecko)' +
                       'Chrome/45.0.2454.101 Safari/537.36'
     }
-    # pipeline = set([pipelines.MongoPipeline])
+    pipeline = set([pipelines.MongoPipeline])
+
+    def __init__(self, collection_name='jdProductInfo', set_name='', *args, **kwargs):
+        self.collection_name = collection_name
+        self.set_name = set_name
+        super(ProductSpider, self).__init__(*args, **kwargs)
 
     def start_requests(self):
-        id_length = self.r.scard(self.name + ':queue')
+        id_length = self.r.scard(self.name + self.set_name + ':queue')
         count = 1
         print id_length
         while count <= id_length:
@@ -41,17 +46,11 @@ class ProductSpider(scrapy.Spider):
         skuid = response.request.meta['skuid']
         m_price = response.request.meta['m_price']
         pc_price = response.request.meta['pc_price']
-        product_name = response.xpath('//*[@id="name"]/h1/text()').extract()
-        table_url = response.xpath('//*[@id="product-detail-2"]/table/tr')
-        table_url_bak = response.xpath('//*[@id="detail-param"]/table/tr')
         info_object = {}
         key_array = []
         value_array = []
-        if table_url:
-            table_body = table_url
-        else:
-            table_body = table_url_bak
-        for info in table_body:
+        product_name = response.xpath('//*[@id="name"]/h1/text()').extract()
+        for info in response.xpath('//*[@id="product-detail-2"]/table/tr'):
             key = info.xpath('td[@class]/text()').extract()
             value = info.xpath('td[not(@class)]/text()').extract()
             if not key or not value:
@@ -96,14 +95,16 @@ class ProductSpider(scrapy.Spider):
                     pc_price = m
         else:
             print "error"
+        print "pc_price %s" % pc_price
+        print "m_price %s" % m_price
         yield scrapy.Request(self.base_url % skuid, callback=self.parse, meta={'skuid': skuid,
                                                                                'pc_price': pc_price,
                                                                                'm_price': m_price
                                                                                })
 
     def next_requests(self):
-        nextId = self.get_skuid()
-        return [scrapy.Request(self.base_url % nextId, callback=self.parse, meta={'skuid': nextId})]
+        next_id = self.get_skuid()
+        return [scrapy.Request(self.base_url % next_id, callback=self.parse, meta={'skuid': next_id})]
 
     def get_skuid(self):
-        return self.r.spop(self.name + ':queue')
+        return self.r.spop(self.name + self.set_name + ':queue')

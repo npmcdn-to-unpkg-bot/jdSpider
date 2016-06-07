@@ -12,9 +12,11 @@ class SkuidListSpider(scrapy.Spider):
     page = '&page=%d'
     p = re.compile(ur'fp-text.+?<i>(\d+)</i>', re.MULTILINE | re.IGNORECASE)
     sku_re = re.compile(r'data-sku="(\d+)"', re.MULTILINE | re.IGNORECASE)
-    # pipeline = set([pipelines.SkuidRedisPipeline])
+    pipeline = set([pipelines.SkuidRedisPipeline])
 
-    def __init__(self, cid='670,671,672', *args, **kwargs):
+    def __init__(self, set_name='', collection_name='empty', cid='670,671,672', *args, **kwargs):
+        self.set_name = set_name
+        self.collection_name = collection_name
         super(SkuidListSpider, self).__init__(*args, **kwargs)
         self.cid = cid
         self.start_urls = []
