@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import React from 'react';
 import { render } from 'react-dom'
 import { Router, Route, Link , browserHistory} from 'react-router'
-
+import TableMonitor from '../component/monitor'
 const data = [];
 for (let i = 0; i < 100; i++) {
   data.push({
@@ -18,14 +18,9 @@ for (let i = 0; i < 100; i++) {
   });
 }
 
-render((
-  <Router history={browserHistory}>
-    <Route  path="/" component={TableTest} >
-
-    </Route>
-    <Route path="/comments/:productId" component={TableComments}> </Route>
-  </Router>
-), document.body);
+render(
+<TableMonitor/>
+, document.body);
 
 
 

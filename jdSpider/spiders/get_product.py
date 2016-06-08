@@ -50,7 +50,13 @@ class ProductSpider(scrapy.Spider):
         key_array = []
         value_array = []
         product_name = response.xpath('//*[@id="name"]/h1/text()').extract()
-        for info in response.xpath('//*[@id="product-detail-2"]/table/tr'):
+        table_url = response.xpath('//*[@id="product-detail-2"]/table/tr')
+        table_url_bak = response.xpath('//*[@id="detail-param"]/table/tr')
+        if table_url:
+            table_body = table_url
+        else:
+            table_body = table_url_bak
+        for info in table_body:
             key = info.xpath('td[@class]/text()').extract()
             value = info.xpath('td[not(@class)]/text()').extract()
             if not key or not value:

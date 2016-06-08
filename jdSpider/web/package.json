@@ -1,5 +1,5 @@
 {
-  "name": "antd-demo",
+  "name": "monitor",
   "version": "1.0.0",
   "private": true,
   "entry": {
@@ -32,7 +32,7 @@
   ],
   "scripts": {
     "start": "npm run dev",
-    "dev": "dora -p 8001 --plugins webpack,hmr,proxy,livereload?enableJs=false",
+    "dev": "dora -p 8002 --plugins \"webpack,hmr,proxy?port=8088,livereload?enableJs=false\"",
     "lint": "eslint --ext .js,.jsx src",
     "build": "atool-build -o ./dist/${npm_package_family}/${npm_package_name}/${npm_package_version}"
   }

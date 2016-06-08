@@ -59,15 +59,17 @@ class MongoPipeline(object):
 
     @check_spider_pipeline
     def process_item(self, item, spider):
-        comment = dict(item)
-        print comment['comments']["guid"]
-        self.db[self.collection_name].update_one({
-            'comments.guid': comment['comments']['guid']
-        }, {
-            '$set': comment
+        if spider.name == "productId":
+            self.db[self.collection_name].insert(dict(item))
+        else:
+            comment = dict(item)
+            print comment['comments']["guid"]
+            self.db[self.collection_name].update_one({
+                'comments.guid': comment['comments']['guid']
+            }, {
+                '$set': comment
 
-        }, upsert=True)
-        # self.db[self.collection_name].insert(dict(item))
+            }, upsert=True)
         return item
 
 

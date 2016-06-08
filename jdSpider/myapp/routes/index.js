@@ -58,7 +58,7 @@ router.get('/productInfo', function (req, res) {
         var commentsContent = [];
         var info = [];
         var indexNum = 1;
-        var comments = db.collection('jdProductInfo_test2');
+        var comments = db.collection('jdProductInfo_0607');
         comments.find({}).toArray(function (err, docs) {
             commentsContent = docs.map(function (obj) {
                 var newObj;
@@ -140,7 +140,7 @@ router.get('/scrapymonitor/*', function (req, res) {
         for (let product_id in reply){
             redisClient.scard(reply[product_id] + setName, function (err, sum){
                 let item = {};
-                item["product_id"] = product_id;
+                item["product_id"] = reply[product_id] ;
                 item["pageSum"] = sum;
                 result.push(item);
                 console.log(product_id);

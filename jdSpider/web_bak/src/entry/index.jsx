@@ -8,21 +8,14 @@ import React from 'react';
 import { render } from 'react-dom'
 import { Router, Route, Link , browserHistory} from 'react-router'
 import Search from '../component/SearchForm'
+import TableMonitor from '../component/monitor'
 
-const data = [];
-for (let i = 0; i < 100; i++) {
-  data.push({
-    key: i,
-    name: `李大嘴${i}`,
-    age: 32,
-    address: `西湖区湖底公园${i}号`
-  });
-}
 
 render((
   <Router history={browserHistory}>
     <Route path="/" component={ProductInfo}></Route>
-    <Route path="/comments/:productId" component={TableComments}> </Route>
+    <Route path="/comments/:poductId" component={TableComments}> </Route>
+    <Route path="/scrapyMonitor" component={TableMonitor}> </Route>
   </Router>
 ), document.getElementById('react-table'));
 

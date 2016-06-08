@@ -32,40 +32,54 @@ class CommentSpider(scrapy.Spider):
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) ' +
                       'AppleWebKit/537.36 (KHTML, like Gecko)' +
                       'Chrome/45.0.2454.101 Safari/537.36',
-        "CONCURRENT_REQUESTS": 1,
-        "DOWNLOAD_DELAY": 5
+        "CONCURRENT_REQUESTS": 3,
+        "DOWNLOAD_DELAY": 0.2
     }
     pipeline = set([pipelines.MongoPipeline])
 
-    def __init__(self, collection_name='jdProductComments', set_name='', *args, **kwargs):
+    def __init__(self, collection_name='jdProductComments', set_name='', target_id=0, *args, **kwargs):
         self.collection_name = collection_name
         self.set_name = set_name
+        self.target_id = target_id
         super(CommentSpider, self).__init__(*args, **kwargs)
 
     def start_requests(self):
         # product_id = [1956799, 1956794]
-        if self.get_cache_count() != 0:
-            for product_id in self.get_cache_skuid():
-                print product_id
-                self.success_count[product_id] = 0
-                for page in self.get_page_number(product_id):
-                    yield scrapy.Request(self.base_url % (product_id, page), callback=self.parse,
-                                     meta={'page': page, 'url_type': 0, 'product_id': product_id})
-        id_length = self.r.scard(self.name + self.set_name + ':queue')
-        count = 1
-        page_number = 0
-        while count <= id_length:
-            count += 1
-            product_id = self.get_skuid()
-            self.save_skuid(product_id)
-            yield scrapy.Request(self.base_url % (product_id, page_number), callback=self.get_max_pages,
-                                 meta={'product_id': product_id}, dont_filter=True)
+        if self.target_id != 0:
+            # 当目标ID存在cache中,将其页数取出,继续爬取,否则重新爬取
+            self.success_count[self.target_id] = 0
+            if self.skuid_exist_cache(self.target_id) == 1:
+                for target_page in self.get_page_number(self.target_id):
+                    yield scrapy.Request(self.base_url % (self.target_id, target_page), callback=self.parse,
+                                         meta={'page': target_page, 'url_type': 0, 'product_id': self.target_id}
+                                         , dont_filter=True)
+            else:
+                self.save_skuid(self.target_id)
+                yield scrapy.Request(self.base_url % (self.target_id, 0), callback=self.get_max_pages,
+                                         meta={'product_id': self.target_id}, dont_filter=True)
+        else:
+            if self.get_cache_count() != 0:
+                for product_id in self.get_cache_skuid():
+                    print product_id
+                    self.success_count[product_id] = 0
+                    for page in self.get_page_number(product_id):
+                        yield scrapy.Request(self.base_url % (product_id, page), callback=self.parse,
+                                         meta={'page': page, 'url_type': 0, 'product_id': product_id}, dont_filter=True)
+            id_length = self.r.scard(self.name + self.set_name + ':queue')
+            count = 1
+            page_number = 0
+            while count <= id_length:
+                count += 1
+                product_id = self.get_skuid()
+                self.save_skuid(product_id)
+                yield scrapy.Request(self.base_url % (product_id, page_number), callback=self.get_max_pages,
+                                     meta={'product_id': product_id}, dont_filter=True)
 
     def parse(self, response):
         page = response.request.meta['page']
         url_type = response.request.meta['url_type']
         product_id = response.request.meta['product_id']
-        body = response.body.decode("gbk")
+        body = response.body.decode("gbk", 'ignore')
 
         if response.status != 200:
             time.sleep(180)
@@ -89,6 +103,7 @@ class CommentSpider(scrapy.Spider):
                     self.failList.remove(page)
                 self.success_count[product_id] += 1
                 # single produce comments storage
+                self.delete_current_page(product_id, page)
                 if not body_json["comments"]:
                     pass
                 else:
@@ -100,10 +115,9 @@ class CommentSpider(scrapy.Spider):
                         body_comments[i]["product_id"] = product_id
                         yield CommentsItem(comments=body_comments[i])
                         i += 1
-                    self.delete_current_page(product_id, page)
                     print 'page_count %d' % self.get_page_count(product_id)
-                    if self.get_page_count(product_id) == 0:
-                        self.delete_skuid(product_id)
+            if self.get_page_count(product_id) == 0:
+                self.delete_skuid(product_id)
             print 'fail count %d' % len(self.failList)
             # if self.success_count[product_id] == (self.max_page[product_id] - 1):
             #     print "success!!!!!!"
@@ -124,7 +138,7 @@ class CommentSpider(scrapy.Spider):
             yield scrapy.Request(self.base_url % (product_id, current_page - 1),
                                  callback=self.parse, meta={'page': current_page - 1,
                                                             'url_type': 0,
-                                                            'product_id': product_id})
+                                                            'product_id': product_id}, dont_filter=True)
 
     def get_cache_skuid(self):
         return self.r.smembers(self.name + self.set_name + "_cache:queue")
@@ -152,5 +166,8 @@ class CommentSpider(scrapy.Spider):
 
     def delete_current_page(self, product_id, page):
         self.r.srem(product_id + self.set_name, page)
+
+    def skuid_exist_cache(self, product_id):
+        return self.r.sismember(self.name + self.set_name + '_cache:queue', product_id)
 
 
